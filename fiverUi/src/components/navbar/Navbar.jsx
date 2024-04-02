@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Navbar.scss";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import newRequest from "../../utils/newRequest";
 
 const Navbar = () => {
 
@@ -17,12 +18,18 @@ const Navbar = () => {
         }
     }, [])
 
-    const currentUser = {
-        id: 1,
-        username: "Anna",
-        isSeller: true,
-    };
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
+    const navigate = useNavigate();
+    const handleLogout = async () => {
+        try {
+            await newRequest.post("/auth/logout")
+            localStorage.setItem("currentUser", null)
+            navigate("/")
+        } catch (error) {
+            console.log(error);
+        }
+    }
     return (<div className={active || pathname !== "/" ? "navbar active" : "navbar"}>
         <div className="container">
             <div className="logo">
@@ -35,15 +42,16 @@ const Navbar = () => {
                 <span>Fiverr Business</span>
                 <span>Explore</span>
                 <span>English</span>
-                <span>Sign In</span>
+                <Link to="/login" className="link">
+                    <span>Sign In</span>
+                </Link>
                 {!currentUser?.isSeller && <span>Become Seller</span>}
                 {!currentUser && <button>Join</button>}
                 {
                     currentUser && (
                         <div className="user" onClick={() => setOpen(!open)}>
                             <img
-                                src="https://images.pexels.com/photos/1115697/pexels-photo-1115697.jpeg?auto=compress&cs=tinysrgb&w=1600"
-                                alt=""
+                                src={currentUser.img || "/img/check.png"}
                             />
                             <span>{currentUser?.username}</span>
                             {open && <div className="options">
@@ -57,7 +65,7 @@ const Navbar = () => {
                                 }
                                 <Link to="/orders" className="link">Orders</Link>
                                 <Link to="/messages" className="link">Messages</Link>
-                                <Link to="/logout" className="link">Logout</Link>
+                                <Link className="link" onClick={handleLogout}>Logout</Link>
 
 
                             </div>}
