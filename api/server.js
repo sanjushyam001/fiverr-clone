@@ -37,6 +37,7 @@ app.use("/api/reviews", reviewRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api/messages", messageRoute);
 app.use("/api/conversations", conversationRoute);
+app.use("/api/messages", messageRoute);
 
 app.listen(8800, () => {
   connect();

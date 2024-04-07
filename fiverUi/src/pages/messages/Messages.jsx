@@ -1,12 +1,14 @@
 import React from 'react'
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from 'react-router-dom'
 import "./Messages.scss"
 import newRequest from "../../utils/newRequest";
 import moment from "moment"
+
 const Message = () => {
 
   const currentUser = JSON.parse(localStorage.getItem("currentUser"))
+  const queryClient = useQueryClient();
   const { isLoading, error, data } = useQuery({
     queryKey: ["conversations"],
     queryFn: () =>
@@ -15,6 +17,18 @@ const Message = () => {
       }),
   });
 
+  const mutation = useMutation({
+    mutationFn: (id) => {
+      return newRequest.put(`/conversations/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["conversations"]);
+    },
+  });
+
+  const handleRead = (id) => {
+    mutation.mutate(id);
+  };
 
   console.log(error);
   return (
@@ -40,10 +54,15 @@ const Message = () => {
                     <td>
                       {currentUser.isSeller ? c.buyerId : c.sellerId}
                     </td>
-                    <td><Link to="/message/123" className="link">{c?.lastMessage?.substring(0, 100)}...</Link></td>
+                    <td><Link to={`/message/${c.id}`} className="link">{c?.lastMessage?.substring(0, 100)}...</Link></td>
                     <td>{moment(c.updatedAt).fromNow()}</td>
                     <td>
-                      <button>Mark as read</button>
+                      {((currentUser.isSeller && !c.readBySeller) ||
+                        (!currentUser.isSeller && !c.readByBuyer)) && (
+                          <button onClick={() => handleRead(c.id)}>
+                            Mark as Read
+                          </button>
+                        )}
                     </td>
 
                   </tr>

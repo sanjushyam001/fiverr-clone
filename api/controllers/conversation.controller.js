@@ -37,21 +37,19 @@ export const getSingleConversation = async (req, res, next) => {
   }
 };
 export const updateConversation = async (req, res, next) => {
-  const updateConversation = await Conversation.findByIdAndUpdate(
-    {
-      id: req.params.id,
-    },
-    {
-      $set: {
-        // readBySeller: req.isSeller,
-        // readByBuyer: !req.isSeller,
-
-        ...(req.isSeller ? { readBySeller: true } : { readByBuyer: true }),
-      },
-    },
-    { new: true }
-  );
   try {
+    const updateConversation = await Conversation.findOneAndUpdate(
+      { id: req.params.id },
+      {
+        $set: {
+          // readBySeller: true,
+          // readByBuyer: true,
+          ...(req.isSeller ? { readBySeller: true } : { readByBuyer: true }),
+        },
+      },
+      { new: true }
+    );
+
     res.status(200).send(updateConversation);
   } catch (error) {
     next(error);
